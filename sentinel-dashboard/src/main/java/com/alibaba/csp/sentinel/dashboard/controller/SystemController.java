@@ -20,6 +20,8 @@ import java.util.List;
 
 import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService.PrivilegeType;
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.DegradeRuleEntity;
+import com.alibaba.csp.sentinel.dashboard.persistence.RuleController;
 import com.alibaba.csp.sentinel.dashboard.repository.rule.RuleRepository;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
@@ -40,7 +42,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("/system")
-public class SystemController {
+public class SystemController extends RuleController<SystemRuleEntity> {
 
     private final Logger logger = LoggerFactory.getLogger(SystemController.class);
 
@@ -74,7 +76,8 @@ public class SystemController {
             return checkResult;
         }
         try {
-            List<SystemRuleEntity> rules = sentinelApiClient.fetchSystemRuleOfMachine(app, ip, port);
+//            List<SystemRuleEntity> rules = sentinelApiClient.fetchSystemRuleOfMachine(app, ip, port);
+            List<SystemRuleEntity> rules = fetchRules(app);
             rules = repository.saveAll(rules);
             return Result.ofSuccess(rules);
         } catch (Throwable throwable) {
@@ -153,7 +156,10 @@ public class SystemController {
             logger.error("Add SystemRule error", throwable);
             return Result.ofThrowable(-1, throwable);
         }
-        if (!publishRules(app, ip, port)) {
+//        if (!publishRules(app, ip, port)) {
+//            logger.warn("Publish system rules fail after rule add");
+//        }
+        if (!publishRules(app)) {
             logger.warn("Publish system rules fail after rule add");
         }
         return Result.ofSuccess(entity);
@@ -215,7 +221,10 @@ public class SystemController {
             logger.error("save error:", throwable);
             return Result.ofThrowable(-1, throwable);
         }
-        if (!publishRules(entity.getApp(), entity.getIp(), entity.getPort())) {
+//        if (!publishRules(entity.getApp(), entity.getIp(), entity.getPort())) {
+//            logger.info("publish system rules fail after rule update");
+//        }
+        if (!publishRules(entity.getApp())) {
             logger.info("publish system rules fail after rule update");
         }
         return Result.ofSuccess(entity);
@@ -237,7 +246,10 @@ public class SystemController {
             logger.error("delete error:", throwable);
             return Result.ofThrowable(-1, throwable);
         }
-        if (!publishRules(oldEntity.getApp(), oldEntity.getIp(), oldEntity.getPort())) {
+//        if (!publishRules(oldEntity.getApp(), oldEntity.getIp(), oldEntity.getPort())) {
+//            logger.info("publish system rules fail after rule delete");
+//        }
+        if (!publishRules(oldEntity.getApp())) {
             logger.info("publish system rules fail after rule delete");
         }
         return Result.ofSuccess(id);
